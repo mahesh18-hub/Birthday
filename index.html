@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Happy Birthday 🎂</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: linear-gradient(270deg, red, orange, yellow, green, cyan, blue, violet);
+      background-size: 1400% 1400%;
+      animation: rainbowBG 12s ease infinite;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    @keyframes rainbowBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .birthday-img {
+      width: 350px;         
+      height: 350px;        
+      border-radius: 50%;   /* round shape */
+      object-fit: cover;    /* keep proportions */
+      margin-bottom: 20px;
+      border: 8px solid transparent;
+      background: linear-gradient(45deg, red, orange, yellow, green, cyan, blue, violet);
+      background-size: 400% 400%;
+      animation: bounce 2s infinite, rainbowGlow 6s linear infinite;
+      padding: 5px; /* glowing ring */
+    }
+
+    @keyframes rainbowGlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    h1 {
+      font-size: 4em;
+      color: #fff;
+      text-shadow: 0 0 20px #ff0080, 0 0 40px #ff0080, 0 0 60px #ff0080;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 20px #ff0080, 0 0 40px #ff0080; }
+      to { text-shadow: 0 0 30px #00ffe0, 0 0 60px #00ffe0; }
+    }
+
+    .balloon {
+      position: absolute;
+      bottom: -150px;
+      width: 80px;
+      height: 100px;
+      background: radial-gradient(circle at 50% 35%, #ff5f6d, #ffc371);
+      border-radius: 50%;
+      animation: floatUp 10s linear infinite;
+    }
+
+    .balloon::after {
+      content: '';
+      position: absolute;
+      bottom: -40px;
+      left: 50%;
+      width: 2px;
+      height: 40px;
+      background: #555;
+      transform: translateX(-50%);
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-120vh) scale(1.1); opacity: 0; }
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🎂 Birthday Image -->
+  <img src="image.jpg" alt="Birthday Cake" class="birthday-img">
+
+  <h1>🎉 Happy Birthday! 🎂</h1>
+
+  <canvas id="confetti"></canvas>
+
+  <!-- 🎶 Background Music (Fixed autoplay) -->
+  <audio id="bg-music" autoplay loop>
+    <source src="song.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    // 🎶 Music Autoplay with Fade-In
+    window.addEventListener("load", () => {
+      const music = document.getElementById("bg-music");
+      let vol = 0;
+      music.volume = 0;
+      music.play().then(() => {
+        // fade in volume gradually
+        const fade = setInterval(() => {
+          if (vol < 1) {
+            vol += 0.05;
+            music.volume = vol;
+          } else {
+            clearInterval(fade);
+          }
+        }, 200);
+      }).catch(() => {
+        console.log("Autoplay blocked 😢 — will start on first click.");
+        // fallback: play on first click
+        window.addEventListener("click", () => {
+          music.play();
+          music.volume = 1;
+        }, { once: true });
+      });
+    });
+
+    // 🎈 Balloons
+    function createBalloon() {
+      const balloon = document.createElement("div");
+      balloon.className = "balloon";
+      balloon.style.left = Math.random() * window.innerWidth + "px";
+      balloon.style.background = `radial-gradient(circle at 50% 35%, hsl(${Math.random()*360},70%,60%), hsl(${Math.random()*360},70%,80%))`;
+      balloon.style.animationDuration = (5 + Math.random()*5) + "s";
+      document.body.appendChild(balloon);
+
+      setTimeout(() => balloon.remove(), 10000);
+    }
+    setInterval(createBalloon, 800);
+
+    // 🎊 Confetti
+    const confettiCanvas = document.getElementById("confetti");
+    const ctx = confettiCanvas.getContext("2d");
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+
+    let confettiPieces = [];
+
+    function randomColor() {
+      const colors = ["#ff0", "#0f0", "#0ff", "#f0f", "#f00", "#00f"];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function createConfetti() {
+      return {
+        x: Math.random() * confettiCanvas.width,
+        y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+        w: 10,
+        h: 20,
+        color: randomColor(),
+        speed: Math.random() * 3 + 2,
+        tilt: Math.random() * 10 - 5
+      };
+    }
+
+    function drawConfetti(c) {
+      ctx.fillStyle = c.color;
+      ctx.fillRect(c.x, c.y, c.w, c.h);
+    }
+
+    function updateConfetti(c) {
+      c.y += c.speed;
+      c.x += Math.sin(c.tilt / 10);
+      if (c.y > confettiCanvas.height) {
+        Object.assign(c, createConfetti());
+        c.y = -20;
+      }
+    }
+
+    for (let i = 0; i < 150; i++) {
+      confettiPieces.push(createConfetti());
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      confettiPieces.forEach(c => {
+        updateConfetti(c);
+        drawConfetti(c);
+      });
+      requestAnimationFrame(animateConfetti);
+    }
+
+    animateConfetti();
+
+    window.addEventListener("resize", () => {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
